@@ -18,6 +18,7 @@ import com.yandex.mapkit.ScreenPoint;
 import com.yandex.mapkit.ScreenRect;
 import com.yandex.mapkit.geometry.BoundingBox;
 import com.yandex.mapkit.geometry.Point;
+import com.yandex.mapkit.geometry.geo.XYPoint;
 import com.yandex.mapkit.layers.ObjectEvent;
 import com.yandex.mapkit.logo.Alignment;
 import com.yandex.mapkit.logo.HorizontalAlignment;
@@ -349,6 +350,9 @@ public class YandexMapController implements
         move(call);
         result.success(null);
         break;
+      case "worldToXY":
+        result.success(worldToXY(call));
+        break;
       case "setBounds":
         setBounds(call);
         result.success(null);
@@ -484,6 +488,28 @@ public class YandexMapController implements
     Animation animation = new Animation(type, ((Double) paramsAnimation.get("duration")).floatValue());
 
     mapView.getMap().move(cameraPosition, animation, null);
+  }
+
+  public Map<String, Object> worldToXY(MethodCall call){
+    Map<String, Object> params = ((Map<String, Object>) call.arguments);
+
+    final ScreenPoint screenPoint = mapView.worldToScreen(Utils.pointFromJson(params));
+    new HashMap<String, Object>(){
+      {
+        put("offsetX", screenPoint.getX());
+        put("offsetY", screenPoint.getY());
+      }
+    };
+
+    params.put("height", mapView.height());
+    params.put("width", mapView.width());
+    params.put("screen", new HashMap<String, Object>(){
+      {
+        put("offsetX", screenPoint.getX());
+        put("offsetY", screenPoint.getY());
+      }
+    });
+    return params;
   }
 
   private void zoom(float step) {

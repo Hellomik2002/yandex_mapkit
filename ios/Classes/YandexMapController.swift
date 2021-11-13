@@ -78,6 +78,8 @@ public class YandexMapController: NSObject, FlutterPlatformView, YMKUserLocation
     case "move":
       move(call)
       result(nil)
+    case "worldToXY":
+      result(worldToXY(call));
     case "setBounds":
       setBounds(call)
       result(nil)
@@ -233,6 +235,26 @@ public class YandexMapController: NSObject, FlutterPlatformView, YMKUserLocation
     )
 
     moveWithParams(paramsAnimation, cameraPosition)
+  }
+    
+  public func worldToXY(_ call: FlutterMethodCall) -> [String: Any] {
+    let params = call.arguments as! [String: Any]
+    
+    let _ans = mapView.mapWindow.worldToScreen(
+        withWorldPoint: YMKPoint(
+            latitude: params["latitude"] as! Double,
+            longitude: params["longitude"] as! Double
+        )
+     )
+      return [
+        "height": mapView.mapWindow.height(),
+        "width": mapView.mapWindow.width(),
+        "screen": [
+            "offsetX": _ans?.x,
+            "offsetY": _ans?.y
+        ]
+      ];
+      
   }
 
   public func setBounds(_ call: FlutterMethodCall) {

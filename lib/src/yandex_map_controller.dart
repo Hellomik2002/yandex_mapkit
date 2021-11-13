@@ -10,9 +10,7 @@ class YandexMapController extends ChangeNotifier {
 
   /// Root object which contains all [MapObject] which were created by [YandexMapController]
   MapObjectCollection _mapObjectCollection = MapObjectCollection(
-    mapId: MapObjectId('root_map_object_collection'),
-    mapObjects: []
-  );
+      mapId: MapObjectId('root_map_object_collection'), mapObjects: []);
 
   /// All [MapObject] which were created natively by [YandexMap]
   ///
@@ -25,9 +23,11 @@ class YandexMapController extends ChangeNotifier {
   /// All [MapObject] in [YandexMap]
   ///
   /// This contains all objects that were created by any means
-  List<MapObject> get _allMapObjects => _mapObjectCollection.mapObjects + _nonRootMapObjects;
+  List<MapObject> get _allMapObjects =>
+      _mapObjectCollection.mapObjects + _nonRootMapObjects;
 
-  static Future<YandexMapController> init(int id, _YandexMapState yandexMapState) async {
+  static Future<YandexMapController> init(
+      int id, _YandexMapState yandexMapState) async {
     final methodChannel = MethodChannel('yandex_mapkit/yandex_map_$id');
     await methodChannel.invokeMethod('waitForInit');
 
@@ -35,9 +35,7 @@ class YandexMapController extends ChangeNotifier {
   }
 
   /// Set Yandex logo position
-  Future<void> logoAlignment({
-    required MapAlignment alignment
-  }) async {
+  Future<void> logoAlignment({required MapAlignment alignment}) async {
     await _channel.invokeMethod('logoAlignment', alignment.toJson());
   }
 
@@ -59,19 +57,15 @@ class YandexMapController extends ChangeNotifier {
   /// Android: `android.permission.ACCESS_FINE_LOCATION`
   ///
   /// Does nothing if these permissions were denied
-  Future<void> toggleUserLayer({
-    required bool visible,
-    bool headingEnabled = true,
-    bool autoZoomEnabled = false
-  }) async {
-    await _channel.invokeMethod(
-      'toggleUserLayer',
-      {
-        'visible': visible,
-        'headingEnabled': headingEnabled,
-        'autoZoomEnabled': autoZoomEnabled,
-      }
-    );
+  Future<void> toggleUserLayer(
+      {required bool visible,
+      bool headingEnabled = true,
+      bool autoZoomEnabled = false}) async {
+    await _channel.invokeMethod('toggleUserLayer', {
+      'visible': visible,
+      'headingEnabled': headingEnabled,
+      'autoZoomEnabled': autoZoomEnabled,
+    });
   }
 
   /// Applies styling to the map
@@ -80,38 +74,37 @@ class YandexMapController extends ChangeNotifier {
   }
 
   /// Moves camera to specified [point]
-  Future<void> move({
-    required CameraPosition cameraPosition,
-    MapAnimation? animation
-  }) async {
-    await _channel.invokeMethod(
-      'move',
-      {
-        'cameraPosition': cameraPosition.toJson(),
-        'animation': animation?.toJson(),
-      }
+  Future<void> move(
+      {required CameraPosition cameraPosition, MapAnimation? animation}) async {
+    await _channel.invokeMethod('move', {
+      'cameraPosition': cameraPosition.toJson(),
+      'animation': animation?.toJson(),
+    });
+  }
+
+  Future<dynamic> worldToXY(Point point, int zoom) async {
+    final _obj = {
+      ...point.toJson(),
+      "zoom": zoom,
+    };
+    return await _channel.invokeMethod(
+      'worldToXY',
+      _obj,
     );
   }
 
   /// Moves map to include area inside [southWestPoint] and [northEastPoint]
-  Future<void> setBounds({
-    required BoundingBox boundingBox,
-    MapAnimation? animation
-  }) async {
-    await _channel.invokeMethod(
-      'setBounds',
-      {
-        'boundingBox': boundingBox.toJson(),
-        'animation': animation?.toJson(),
-      }
-    );
+  Future<void> setBounds(
+      {required BoundingBox boundingBox, MapAnimation? animation}) async {
+    await _channel.invokeMethod('setBounds', {
+      'boundingBox': boundingBox.toJson(),
+      'animation': animation?.toJson(),
+    });
   }
 
   /// Allows to set map focus to a certain rectangle instead of the whole map
   /// For more info refer to [YMKMapWindow.focusRect](https://yandex.ru/dev/maps/archive/doc/mapkit/3.0/concepts/ios/mapkit/ref/YMKMapWindow.html#property_detail__property_focusRect)
-  Future<void> setFocusRect({
-    required ScreenRect screenRect
-  }) async {
+  Future<void> setFocusRect({required ScreenRect screenRect}) async {
     await _channel.invokeMethod('setFocusRect', screenRect.toJson());
   }
 
@@ -142,8 +135,10 @@ class YandexMapController extends ChangeNotifier {
   /// 2. All new map objects in [updatedMapObjects] that aren't present on the map will be added
   /// 3. All map objects present in [updatedMapObjects] and are on the map will be updated
   Future<void> updateMapObjects(List<MapObject> updatedMapObjects) async {
-    final updatedMapObjectCollection = _mapObjectCollection.copyWith(mapObjects: updatedMapObjects);
-    final mapObjectUpdates = MapObjectUpdates.from({_mapObjectCollection}, {updatedMapObjectCollection});
+    final updatedMapObjectCollection =
+        _mapObjectCollection.copyWith(mapObjects: updatedMapObjects);
+    final mapObjectUpdates = MapObjectUpdates.from(
+        {_mapObjectCollection}, {updatedMapObjectCollection});
 
     await _channel.invokeMethod('updateMapObjects', mapObjectUpdates.toJson());
     _mapObjectCollection = updatedMapObjectCollection;
@@ -251,25 +246,24 @@ class YandexMapController extends ChangeNotifier {
 
   Future<Map<String, dynamic>?> _onUserLocationAdded(dynamic arguments) async {
     final pin = Placemark(
-      mapId: MapObjectId('user_location_pin'),
-      point: Point._fromJson(arguments['pinPoint'])
-    );
+        mapId: MapObjectId('user_location_pin'),
+        point: Point._fromJson(arguments['pinPoint']));
     final arrow = Placemark(
-      mapId: MapObjectId('user_location_arrow'),
-      point: Point._fromJson(arguments['arrowPoint'])
-    );
+        mapId: MapObjectId('user_location_arrow'),
+        point: Point._fromJson(arguments['arrowPoint']));
     final accuracyCircle = Circle(
-      mapId: MapObjectId('user_location_accuracy_circle'),
-      center: Point._fromJson(arguments['circle']['center']),
-      radius: arguments['circle']['radius']
-    );
-    final view = UserLocationView._(arrow: arrow, pin: pin, accuracyCircle: accuracyCircle);
-    final newView = _yandexMapState.widget.onUserLocationAdded != null ?
-      (await _yandexMapState.widget.onUserLocationAdded!(view)) :
-      view;
+        mapId: MapObjectId('user_location_accuracy_circle'),
+        center: Point._fromJson(arguments['circle']['center']),
+        radius: arguments['circle']['radius']);
+    final view = UserLocationView._(
+        arrow: arrow, pin: pin, accuracyCircle: accuracyCircle);
+    final newView = _yandexMapState.widget.onUserLocationAdded != null
+        ? (await _yandexMapState.widget.onUserLocationAdded!(view))
+        : view;
     final newPin = newView?.pin.dup(pin.mapId) ?? pin;
     final newArrow = newView?.arrow.dup(arrow.mapId) ?? arrow;
-    final newAccuracyCircle = newView?.accuracyCircle.dup(accuracyCircle.mapId) ?? accuracyCircle;
+    final newAccuracyCircle =
+        newView?.accuracyCircle.dup(accuracyCircle.mapId) ?? accuracyCircle;
 
     _nonRootMapObjects.addAll([newPin, newArrow, newAccuracyCircle]);
 
@@ -284,23 +278,27 @@ class YandexMapController extends ChangeNotifier {
     final appearancePlacemarkIds = arguments['appearancePlacemarkIds'];
 
     for (var appearancePlacemarkId in appearancePlacemarkIds) {
-      _nonRootMapObjects.remove(_findMapObject(_allMapObjects, appearancePlacemarkId));
+      _nonRootMapObjects
+          .remove(_findMapObject(_allMapObjects, appearancePlacemarkId));
     }
   }
 
   Future<Map<String, dynamic>> _onClusterAdded(dynamic arguments) async {
     final id = arguments['id'];
     final size = arguments['size'];
-    final mapObject = _findMapObject(_allMapObjects, id) as ClusterizedPlacemarkCollection;
+    final mapObject =
+        _findMapObject(_allMapObjects, id) as ClusterizedPlacemarkCollection;
     final placemarks = arguments['placemarkIds']
-      .map<Placemark>((el) => _findMapObject(mapObject.placemarks, el) as Placemark)
-      .toList();
+        .map<Placemark>(
+            (el) => _findMapObject(mapObject.placemarks, el) as Placemark)
+        .toList();
     final appearance = Placemark(
-      mapId: MapObjectId(arguments['appearancePlacemarkId']),
-      point: Point._fromJson(arguments['point'])
-    );
-    final cluster = Cluster._(size: size, appearance: appearance, placemarks: placemarks);
-    final newAppearance = (await mapObject._clusterAdd(cluster))?.appearance ?? cluster.appearance;
+        mapId: MapObjectId(arguments['appearancePlacemarkId']),
+        point: Point._fromJson(arguments['point']));
+    final cluster =
+        Cluster._(size: size, appearance: appearance, placemarks: placemarks);
+    final newAppearance = (await mapObject._clusterAdd(cluster))?.appearance ??
+        cluster.appearance;
 
     _nonRootMapObjects.add(newAppearance);
 
@@ -310,12 +308,17 @@ class YandexMapController extends ChangeNotifier {
   void _onClusterTap(dynamic arguments) {
     final id = arguments['id'];
     final size = arguments['size'];
-    final mapObject = _findMapObject(_allMapObjects, id) as ClusterizedPlacemarkCollection;
+    final mapObject =
+        _findMapObject(_allMapObjects, id) as ClusterizedPlacemarkCollection;
     final placemarks = arguments['placemarkIds']
-      .map<Placemark>((el) => _findMapObject(mapObject.placemarks, el) as Placemark)
-      .toList();
-    final appearance = _findMapObject(_allMapObjects, arguments['appearancePlacemarkId']) as Placemark;
-    final cluster = Cluster._(size: size, appearance: appearance, placemarks: placemarks);
+        .map<Placemark>(
+            (el) => _findMapObject(mapObject.placemarks, el) as Placemark)
+        .toList();
+    final appearance =
+        _findMapObject(_allMapObjects, arguments['appearancePlacemarkId'])
+            as Placemark;
+    final cluster =
+        Cluster._(size: size, appearance: appearance, placemarks: placemarks);
 
     mapObject._clusterTap(cluster);
   }
@@ -344,7 +347,8 @@ class YandexMapController extends ChangeNotifier {
         foundMapObject = _findMapObject(mapObject.mapObjects, id);
       }
 
-      if (foundMapObject == null && mapObject is ClusterizedPlacemarkCollection) {
+      if (foundMapObject == null &&
+          mapObject is ClusterizedPlacemarkCollection) {
         foundMapObject = _findMapObject(mapObject.placemarks, id);
       }
 
@@ -362,9 +366,8 @@ class YandexMapController extends ChangeNotifier {
 
   void _onCameraPositionChanged(dynamic arguments) {
     _cameraPositionCallback!(
-      CameraPosition._fromJson(arguments['cameraPosition']),
-      arguments['finished']
-    );
+        CameraPosition._fromJson(arguments['cameraPosition']),
+        arguments['finished']);
   }
 
   Future<bool> isTiltGesturesEnabled() async {
